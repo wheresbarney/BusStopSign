@@ -1,10 +1,11 @@
 from interstate75 import Interstate75
-import time
-import network
-import machine
-from picodebug import logPrint
 import CONFIG
+import logging
+import machine
+import network
 import tfl
+import time
+import uasyncio as asyncio
 
 """
 1. WiFi ✅
@@ -31,9 +32,7 @@ def connect_wlan(ssid, psk, timeout_secs=30):
         if wlan.status() < 0 or wlan.status() >= 3:
             break
         max_wait -= 1
-        logPrint(
-            f"waiting for wlan connection to {ssid}...", led=board_led, numberOfBlinks=1
-        )
+        logging.debug(f"waiting for wlan connection to {ssid}...")
         time.sleep(1)
 
     # Handle connection error
@@ -41,10 +40,11 @@ def connect_wlan(ssid, psk, timeout_secs=30):
         raise RuntimeError(f"network connection failed: {wlan.status}")
     else:
         status = wlan.ifconfig()
-        logPrint(f"connected: ip={status[0]}", led=board_led, numberOfBlinks=3)
+        logging.info(f"connected: ip={status[0]}")
 
 
 def flash_hello_world():
+    i75 = Interstate75(display=Interstate75.DISPLAY_INTERSTATE75_64X32)
     graphics = i75.display
 
     MAGENTA = graphics.create_pen(255, 0, 255)
@@ -65,9 +65,13 @@ def flash_hello_world():
         time.sleep(0.5)
 
 
-i75 = Interstate75(display=Interstate75.DISPLAY_INTERSTATE75_64X32)
-board_led = machine.Pin("LED", machine.Pin.OUT)
+async def main():
+    logging.basicConfig(level=logging.DEBUG)
 
-connect_wlan(CONFIG.SSID, CONFIG.PSK)
-# flash_hello_world()
-logPrint(tfl.route_to_brit())
+    connect_wlan(CONFIG.SSID, CONFIG.PSK)
+    # flash_hello_world()
+
+    logging.info(await tfl.route_to_brit())
+
+
+asyncio.run(main())

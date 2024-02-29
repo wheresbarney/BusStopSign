@@ -1,0 +1,14 @@
+# https://docs.micropython.org/en/latest/reference/packages.html#packages
+# from REPL: import mip; mip.install("<PACKAGE>")
+# remotely: mpremote mip install <PACKAGE>
+
+# Micropython distribution
+# Micropython *v1.22.0* minumum (need SSL support on asyncio.open_connection())
+# https://github.com/pimoroni/pimoroni-pico/releases/tag/v1.22.1
+
+# install to http_client subdir (e.g. /lib/http_client/)
+github:DrTom/py-u-async-http-client/http_client
+# mpremote mip install --target lib/http_client github:DrTom/py-u-async-http-client/http_client/json_middleware.py  
+# mpremote mip install --target lib/http_client github:DrTom/py-u-async-http-client/http_client/core.py 
+
+logging # mpremote mip install logging
