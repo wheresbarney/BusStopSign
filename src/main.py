@@ -1,11 +1,10 @@
-from interstate75 import Interstate75
 import CONFIG
 import logging
-import machine
 import network
-import tfl
 import time
+import tfl
 import uasyncio as asyncio
+import display
 
 """
 1. WiFi ✅
@@ -43,35 +42,18 @@ def connect_wlan(ssid, psk, timeout_secs=30):
         logging.info(f"connected: ip={status[0]}")
 
 
-def flash_hello_world():
-    i75 = Interstate75(display=Interstate75.DISPLAY_INTERSTATE75_64X32)
-    graphics = i75.display
-
-    MAGENTA = graphics.create_pen(255, 0, 255)
-    BLACK = graphics.create_pen(0, 0, 0)
-    WHITE = graphics.create_pen(255, 255, 255)
-
-    while True:
-        graphics.set_pen(MAGENTA)
-        graphics.text("hello", 1, 0, scale=1)
-        graphics.set_pen(WHITE)
-        graphics.text("world", 1, 6, scale=1)
-        i75.update(graphics)
-        time.sleep(0.5)
-
-        graphics.set_pen(BLACK)
-        graphics.clear()
-        i75.update(graphics)
-        time.sleep(0.5)
-
-
 async def main():
     logging.basicConfig(level=logging.DEBUG)
 
     connect_wlan(CONFIG.SSID, CONFIG.PSK)
-    # flash_hello_world()
+    logging.info("connected to wifi, calling display...")
 
-    logging.info(await tfl.route_to_brit())
+    brit = tfl.route_to_brit()
+    logging.info(brit)
+
+    while True:
+        # await display_commute_info()
+        logging.info(await tfl.route_to_brit())
 
 
 asyncio.run(main())

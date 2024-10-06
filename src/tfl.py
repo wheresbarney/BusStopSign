@@ -14,7 +14,7 @@ async def route_to_brit() -> list[dict[str, str]]:
     # 2. [EXTENSION] Check if 75 is actually the best way to go?
     #    https://api.tfl.gov.uk/journey/journeyresults/{{home}}/to/{{brit school}}?app_id={{app_id}}&app_key={{app_key}}
 
-    deps_arrs, disruptions = await get_bus_journey(
+    deps_arrs, line_status, disruptions = await get_bus_journey(
         BUS_ROUTE_75, BURGHILL_ROAD_STOP_L, BEACONSFIELD_ROAD_STOP_D
     )
 
@@ -23,6 +23,7 @@ async def route_to_brit() -> list[dict[str, str]]:
         "from": "Burghill Road Stop L",
         "to": "Beaconsfield Road",
         "departures_and_arrivals": deps_arrs,  # time format: "2024-02-15T21:35:18Z"
+        "line_status": line_status,
         "disruptions": disruptions,
     }
 
@@ -58,7 +59,7 @@ async def get_bus_journey(route: str, origin: str, dest: str) -> list[tuple[str,
     if disruptions["statusSeverity"] < 10:
         disruptionText += ": " + disruptions["reason"]
 
-    return ret, disruptionText
+    return ret, disruptions["statusSeverity"], disruptionText
 
 
 async def call_tfl_service(service: str, query: str = None):
@@ -68,9 +69,8 @@ async def call_tfl_service(service: str, query: str = None):
     try:
         r = await json_middleware.wrap(http_client.request)
         resp = await r({"url": url, "headers": {"Accept": "application/json"}})
-        json = resp["body"]
-        logging.debug(f"TFL API: {service}?{query} [{len(json)} elements]")
-        return json
+        logging.debug(f"TFL API: {service}?{query}")
+        return resp["body"]
     except Exception as e:
         logging.error(f"Error {e} accessing {url}, got {resp}")
         raise e
